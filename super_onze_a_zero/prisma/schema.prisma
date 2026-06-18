@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+
+model User {
+  id  String  @id @default(uuid())
+  email String @unique
+  name String 
+  password String
+  teams Team[]
+  createdAt DateTime @default(now())
+}
+
+model Championship{
+  id  String @id @default(uuid())
+  name String
+  isActive Boolean @default(true)
+  teams Team[]
+  matches Match[]
+  createdAt DateTime @default(now())
+}
+
+model Team{
+  id  String @id @default(uuid())
+  name String
+  status String @default("DRAFT")
+  userId String 
+  user User @relation(fields: [userId], references: [id])
+  championshipId String
+  championship Championship @relation(fields: [championshipId], references: [id])
+
+  players Player[]
+  createdAt DateTime @default(now())
+
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+
+model Player{
+  id String @id @default(uuid())
+  name String 
+  country String
+  position String 
+  attack Int
+  defense Int
+  overall Int
+  stamina Int @default(100)
+
+  teamId String
+  team Team @relation(fields: [teamId], references: [id])
+
+  techniqueId String @unique
+  technique SpeacialTechnique? @relation(fields: [techniqueId], references: [id])
+
+}
+
+model SpeacialTechnique{
+    id String @id @default(uuid())
+    name String
+    power Int
+    player Player?
+}
+
+model Match{
+  id String @id @default(uuid())
+  status String @default("AGENDADA")
+
+  homeTeamScore Int @default(0)
+  awayTeamScore Int @default(0)
+
+  chapionshipId String
+  championshid Championship @relation(fields: [chapionshipId], references: [id])
+
+  homeTeamId String 
+  homeTeam Team @relation("HomeTeam", fields: [homeTeamId], references: [id])
+
+  awayTeamId String
+  awayTeam Team @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  date DateTime @default(now())
+}
+
